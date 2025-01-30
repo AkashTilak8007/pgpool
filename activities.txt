@@ -1,0 +1,9 @@
+1.	EFM Upgrade on CMS ,RECON 
+2.	RECON PGPOOL Testing pending from application 
+3.	DR PGPOOL shutdown  request 
+4.	DB Version Upgrade 
+5.	Barman backup configuration for CMS , BBPS .
+
+
+
+

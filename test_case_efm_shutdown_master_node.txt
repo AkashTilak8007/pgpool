@@ -1,0 +1,111 @@
+[root@edbpg-UAT-db1 ~]# su - enterprisedb
+Last login: Fri Jan 14 18:50:05 IST 2022 from 10.188.112.7 on pts/0
+[enterprisedb@edbpg-UAT-db1 ~]$ pg_ctl stop
+waiting for server to shut down.... done
+server stopped
+[enterprisedb@edbpg-UAT-db1 ~]$ exit
+logout
+[root@edbpg-UAT-db1 ~]# efm cluster-status efm
+Cluster Status: efm
+
+        Agent Type  Address              DB       VIP
+        ----------------------------------------------------------------
+        Primary     10.188.112.5         UP
+        Standby     10.188.112.7         UP
+        Standby     10.188.112.8         UP
+
+Allowed node host list:
+        10.188.112.5 10.188.112.7 10.188.112.8
+
+Membership coordinator: 10.188.112.8
+
+Standby priority host list:
+        10.188.112.7 10.188.112.8
+
+Promote Status:
+
+        DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------------------
+        Standby     10.188.112.8         1A6/1C207FE0       1A6/1C207FE0
+        UNKNOWN     10.188.112.5         UNKNOWN            UNKNOWN            Connection to 10.188.112.5:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+        Standby     10.188.112.7         1A6/1C207FE0       1A6/1C207FE0
+
+        No primary database was found.
+
+
+
+
+[root@edbpg-UAT-db1 ~]# efm cluster-status efm
+Cluster Status: efm
+
+        Agent Type  Address              DB       VIP
+        ----------------------------------------------------------------
+        Idle        10.188.112.5         UNKNOWN
+        Primary     10.188.112.7         UP
+        Standby     10.188.112.8         UP
+
+Allowed node host list:
+        10.188.112.5 10.188.112.7 10.188.112.8
+
+Membership coordinator: 10.188.112.8
+
+Standby priority host list:
+        10.188.112.8
+
+Promote Status:
+
+        DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------------------
+        Primary     10.188.112.7                            1A6/1C208148
+        Standby     10.188.112.8         1A6/1C208148       1A6/1C208148
+
+        Standby database(s) in sync with primary. It is safe to promote.
+
+Idle Node Status (idle nodes ignored in WAL LSN comparisons):
+
+        Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------
+        10.188.112.5         UNKNOWN            UNKNOWN            Connection to 10.188.112.5:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+
+
+
+
+[root@edbpg-UAT-db2 ~]# su - enterprisedb
+Last login: Fri Jan 14 18:49:49 IST 2022 on pts/0
+[enterprisedb@edbpg-UAT-db2 ~]$ psql
+psql (12.6.7)
+Type "help" for help.
+
+edb=# select * from pg_stat_replication ;
+   pid   | usesysid |   usename    | application_name | client_addr  | client_hostname | client_port |          backend_start           | backend_xmin |   st
+ate   |   sent_lsn   |  write_lsn   |  flush_lsn   |  replay_lsn  | write_lag | flush_lag | replay_lag | sync_priority | sync_state |            reply_time
+
+---------+----------+--------------+------------------+--------------+-----------------+-------------+----------------------------------+--------------+-----
+------+--------------+--------------+--------------+--------------+-----------+-----------+------------+---------------+------------+------------------------
+----------
+ 3064096 |       10 | enterprisedb | s3               | 10.188.112.8 |                 |       36280 | 14-JAN-22 18:52:21.656185 +05:30 |              | stre
+aming | 1A6/1C208148 | 1A6/1C208148 | 1A6/1C208148 | 1A6/1C208148 |           |           |            |             3 | sync       | 14-JAN-22 18:53:43.2291
+74 +05:30
+(1 row)
+
+edb=#
+
+
+[enterprisedb@edbpg-UAT-db2 ~]$ psql -h 10.188.112.13 -p 9999
+psql (12.6.7)
+Type "help" for help.
+
+edb=# show pool_nodes;
+ node_id |   hostname   | port | status | lb_weight |  role   | select_cnt | load_balance_node | replication_delay | replication_state | replication_sync_sta
+te | last_status_change
+---------+--------------+------+--------+-----------+---------+------------+-------------------+-------------------+-------------------+---------------------
+---+---------------------
+ 0       | 10.188.112.5 | 5432 | down   | 0.333333  | standby | 0          | false             | 0                 |                   |
+   | 2022-01-14 13:22:57
+ 1       | 10.188.112.7 | 5432 | up     | 0.333333  | primary | 0          | false             | 0                 |                   |
+   | 2022-01-14 13:27:23
+ 2       | 10.188.112.8 | 5432 | up     | 0.333333  | standby | 0          | true              | 0                 |                   |
+   | 2022-01-14 13:27:23
+(3 rows)
+
+edb=#

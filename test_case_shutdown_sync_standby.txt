@@ -1,0 +1,185 @@
+[root@edbpg-UAT-db3 ~]# efm cluster-status efm
+Cluster Status: efm
+
+        Agent Type  Address              DB       VIP
+        ----------------------------------------------------------------
+        Primary     10.188.112.5         UP
+        Standby     10.188.112.7         UP
+        Standby     10.188.112.8         UP
+
+Allowed node host list:
+        10.188.112.5 10.188.112.7 10.188.112.8
+
+Membership coordinator: 10.188.112.8
+
+Standby priority host list:
+        10.188.112.7 10.188.112.8
+
+Promote Status:
+
+        DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------------------
+        Primary     10.188.112.5                            1A6/1C207F68
+        Standby     10.188.112.8         1A6/1C207F68       1A6/1C207F68
+        Standby     10.188.112.7         1A6/1C207F68       1A6/1C207F68
+
+        Standby database(s) in sync with primary. It is safe to promote.
+
+
+
+
+[enterprisedb@edbpg-UAT-db2 ~]$ psql -p 5432 -h 10.188.112.5
+psql (12.6.7, server 12.9.13)
+Type "help" for help.
+
+edb=# select * from pg_stat_replication ;
+   pid   | usesysid |   usename    | application_name | client_addr  | client_hostname | client_port |          backend_start           | backend_xmin |   st
+ate   |   sent_lsn   |  write_lsn   |  flush_lsn   |  replay_lsn  | write_lag | flush_lag | replay_lag | sync_priority | sync_state |            reply_time
+
+---------+----------+--------------+------------------+--------------+-----------------+-------------+----------------------------------+--------------+-----
+------+--------------+--------------+--------------+--------------+-----------+-----------+------------+---------------+------------+------------------------
+----------
+ 2173263 |       10 | enterprisedb | s3               | 10.188.112.8 |                 |       55294 | 14-JAN-22 18:12:32.439308 +05:30 |              | stre
+aming | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 |           |           |            |             3 | potential  | 14-JAN-22 18:45:23.8617
+71 +05:30
+ 2173262 |       10 | enterprisedb | s2               | 10.188.112.7 |                 |       58842 | 14-JAN-22 18:12:32.345147 +05:30 |              | stre
+aming | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 |           |           |            |             2 | sync       | 14-JAN-22 18:45:26.8255
+58 +05:30
+(2 rows)
+
+edb=# \q
+[enterprisedb@edbpg-UAT-db2 ~]$ ip addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 60:45:bd:72:4f:1c brd ff:ff:ff:ff:ff:ff
+    inet 10.188.112.7/21 brd 10.188.119.255 scope global noprefixroute eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::1483:9131:7f48:2ff5/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+[enterprisedb@edbpg-UAT-db2 ~]$ pg_ctl stop
+waiting for server to shut down.... done
+server stopped
+[enterprisedb@edbpg-UAT-db2 ~]$ psql -p 5432 -h 10.188.112.5
+psql (12.6.7, server 12.9.13)
+Type "help" for help.
+
+edb=# select * from pg_stat_replication ;
+   pid   | usesysid |   usename    | application_name | client_addr  | client_hostname | client_port |          backend_start           | backend_xmin |   st
+ate   |   sent_lsn   |  write_lsn   |  flush_lsn   |  replay_lsn  | write_lag | flush_lag | replay_lag | sync_priority | sync_state |            reply_time
+
+---------+----------+--------------+------------------+--------------+-----------------+-------------+----------------------------------+--------------+-----
+------+--------------+--------------+--------------+--------------+-----------+-----------+------------+---------------+------------+------------------------
+----------
+ 2173263 |       10 | enterprisedb | s3               | 10.188.112.8 |                 |       55294 | 14-JAN-22 18:12:32.439308 +05:30 |              | stre
+aming | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 |           |           |            |             3 | sync       | 14-JAN-22 18:46:33.9744
+81 +05:30
+(1 row)
+
+edb=#
+
+
+
+
+
+
+
+
+[enterprisedb@edbpg-UAT-db2 ~]$ pg_ctl start
+waiting for server to start....2022-01-14 18:47:39 IST LOG:  starting PostgreSQL 12.6 (EnterpriseDB Advanced Server 12.6.7) on x86_64-pc-linux-gnu, compiled by gcc (GCC) 8.3.1 20191121 (Red Hat 8.3.1-5), 64-bit
+2022-01-14 18:47:39 IST LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2022-01-14 18:47:39 IST LOG:  listening on IPv6 address "::", port 5432
+2022-01-14 18:47:39 IST LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2022-01-14 18:47:40 IST LOG:  redirecting log output to logging collector process
+2022-01-14 18:47:40 IST HINT:  Future log output will appear in directory "log".
+ done
+server started
+[enterprisedb@edbpg-UAT-db2 ~]$ exit
+logout
+[root@edbpg-UAT-db2 ~]# efm cluster-status efm
+Cluster Status: efm
+
+        Agent Type  Address              DB       VIP
+        ----------------------------------------------------------------
+        Primary     10.188.112.5         UP
+        Idle        10.188.112.7         UNKNOWN
+        Standby     10.188.112.8         UP
+
+Allowed node host list:
+        10.188.112.5 10.188.112.7 10.188.112.8
+
+Membership coordinator: 10.188.112.8
+
+Standby priority host list:
+        10.188.112.8
+
+Promote Status:
+
+        DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------------------
+        Primary     10.188.112.5                            1A6/1C207F68
+        Standby     10.188.112.8         1A6/1C207F68       1A6/1C207F68
+
+        Standby database(s) in sync with primary. It is safe to promote.
+
+Idle Node Status (idle nodes ignored in WAL LSN comparisons):
+
+        Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------
+        10.188.112.7         1A6/1C000000       1A6/1C207F68       DB is in recovery.
+[root@edbpg-UAT-db2 ~]# efm resume  efm
+Resume command successful on local agent.
+[root@edbpg-UAT-db2 ~]# efm cluster-status efm
+Cluster Status: efm
+
+        Agent Type  Address              DB       VIP
+        ----------------------------------------------------------------
+        Primary     10.188.112.5         UP
+        Standby     10.188.112.7         UP
+        Standby     10.188.112.8         UP
+
+Allowed node host list:
+        10.188.112.5 10.188.112.7 10.188.112.8
+
+Membership coordinator: 10.188.112.8
+
+Standby priority host list:
+        10.188.112.7 10.188.112.8
+
+Promote Status:
+
+        DB Type     Address              WAL Received LSN   WAL Replayed LSN   Info
+        ---------------------------------------------------------------------------
+        Primary     10.188.112.5                            1A6/1C207F68
+        Standby     10.188.112.8         1A6/1C207F68       1A6/1C207F68
+        Standby     10.188.112.7         1A6/1C000000       1A6/1C207F68
+
+        Standby database(s) in sync with primary. It is safe to promote.
+[root@edbpg-UAT-db2 ~]#
+
+
+[enterprisedb@edbpg-UAT-db2 ~]$ psql -p 5432 -h 10.188.112.5
+psql (12.6.7, server 12.9.13)
+Type "help" for help.
+
+edb=# select * from pg_stat_replication ;
+   pid   | usesysid |   usename    | application_name | client_addr  | client_hostname | client_port |          backend_start           | backend_xmin |   st
+ate   |   sent_lsn   |  write_lsn   |  flush_lsn   |  replay_lsn  | write_lag | flush_lag | replay_lag | sync_priority | sync_state |            reply_time
+
+---------+----------+--------------+------------------+--------------+-----------------+-------------+----------------------------------+--------------+-----
+------+--------------+--------------+--------------+--------------+-----------+-----------+------------+---------------+------------+------------------------
+----------
+ 2173263 |       10 | enterprisedb | s3               | 10.188.112.8 |                 |       55294 | 14-JAN-22 18:12:32.439308 +05:30 |              | stre
+aming | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 |           |           |            |             3 | potential  | 14-JAN-22 18:48:14.1407
+73 +05:30
+ 2179759 |       10 | enterprisedb | s2               | 10.188.112.7 |                 |       34464 | 14-JAN-22 18:47:43.494644 +05:30 |              | stre
+aming | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 | 1A6/1C207F68 |           |           |            |             2 | sync       | 14-JAN-22 18:48:20.1544
+12 +05:30
+(2 rows)
+
+edb=#
+
